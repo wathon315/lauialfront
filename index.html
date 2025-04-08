@@ -45,7 +45,7 @@
         <main>
 
             <div v-if="showLesson">
-                <!-- <div class="sort-container">
+                <div class="sort-container">
                     <label for="sortBy">Sort by:</label>
                     <select v-model="sortAttribute" @change="sortLessons">
                         <option value="subject">Subject</option>
@@ -57,9 +57,9 @@
                     <select v-model="sortOrder" @change="sortLessons">
                         <option value="asc">Ascending</option>
                         <option value="desc">Descending</option>
-                    </select> -->
+                    </select>
                 </div>
-                <div class="lesson-container">
+                <!-- <div class="lesson-container">
                     <div v-for="lesson in sortedLessons" :key="lesson.id" class="lesson-box">
                         <div class="lesson-content">
                             <img v-bind:src="lesson.image" alt="Activity Image" width="250">
@@ -77,7 +77,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
             <div v-else class="checkout-container">
                 <div class="checkout-box dual-column">
