@@ -90,7 +90,7 @@
 
 .checkout-box li {
     background-color: rgba(255, 255, 255, 0.8);
-    /* border-left: 5px solid #28a745; */
+    
     margin-bottom: 10px;
     padding: 10px 12px;
     border-radius: 6px;
@@ -110,7 +110,7 @@
   }
   
   .checkout-button:disabled {
-    background-color: black;
+    background-color: rgb(201, 27, 27);
     cursor: not-allowed;
   }
 
