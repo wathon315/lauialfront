@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+    <link rel="stylesheet" href="wathon.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <title>After School Activities</title>
+</head>
+
+<body>
+    <div id="app">
+        <header>
+            <nav class="navbar navbar-expand-lg bg-body-tertiary">
+                <div class="container">
+                    <a class="navbar-brand" href="#">Olive</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false"
+                        aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                        <div class="navbar-nav">
+                            <a class="nav-link" href="#" @click.prevent="showLesson = true">Courses</a>
+                            <a class="nav-link" href="#" :class="{disabled: cart.length===0}"
+                                @click.prevent=" showCheckout()">
+                                {{ cartItemCount }} <span class="fas fa-cart-plus"></span> Shopping Cart
+                            </a>
+                        </div>
+                        <form @submit.prevent="searchLessons" class="d-flex ms-auto" role="search">
+                            <input class="form-control me-2" type="search" v-model="searchQuery" placeholder="Search"
+                                aria-label="Search">
+                            <button class="btn btn-outline-success" type="submit">Search</button>
+                        </form>
+
+                        </form>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <main>
+
+            <div v-if="showLesson">
+                <div class="sort-container">
+                    <label for="sortBy">Sort by:</label>
+                    <select v-model="sortAttribute" @change="sortLessons">
+                        <option value="subject">Subject</option>
+                        <option value="location">Location</option>
+                        <option value="price">Price</option>
+                        <option value="spaces">Spaces</option>
+                    </select>
+                    <label for="sortOrder">Choose:</label>
+                    <select v-model="sortOrder" @change="sortLessons">
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </div>
+                <div class="lesson-container">
+                    <div v-for="lesson in sortedLessons" :key="lesson.id" class="lesson-box">
+                        <div class="lesson-content">
+                            <img v-bind:src="lesson.image" alt="Activity Image" width="250">
+                            <div class="lesson-info">
+                                <p><strong>Subject:</strong> {{ lesson.subject }}</p>
+                                <p><strong>Location:</strong> {{ lesson.location }}</p>
+                                <p><strong>Price:</strong> ${{ lesson.price }}</p>
+                                <p><strong>Spaces:</strong> {{ lesson.spaces }}</p>
+                                <button v-if="lesson.spaces > 0" v-on:click="addItem(lesson)" class="add-to-cart">
+                                    Add to Cart
+                                </button>
+                                <button v-else class="add-to-cart" disabled>
+                                    Out of Space
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div v-else class="checkout-container">
+                <div class="checkout-box dual-column">
+                    <div class="cart-summary">
+                        <h5> Your Shopping Cart</h5>
+                        <div v-if="cartItems.length > 0">
+                            <ul>
+                                <li v-for="(lesson, index) in cartItems" :key="index" class="cart-item">
+                                    <img :src="lesson.image" alt="lesson image" class="cart-img">
+                                    <div class="cart-info">
+                                        <p><strong>{{ lesson.subject }}</strong></p>
+                                        <p>${{ lesson.price }}</p>
+                                    </div>
+                                    <button @click="removeItem(index)" class="remove-btn">Remove</button>
+                                </li>
+                            </ul>
+                            <p><strong>Total Price:</strong> ${{ totalPrice }}</p>
+                        </div>
+                        <div v-else>
+                            <p>Your cart is empty.</p>
+                        </div>
+                    </div>
+                    <div class="checkout-info">
+                        <h5 class="text-center">Please fill your information to complete this order!</h5>
+
+                        <p>
+                            <strong>Name:</strong>
+                            <input v-model="checkout.name" />
+                        </p>
+                        <p>
+                            <strong>Email:</strong>
+                            <input v-model="checkout.email" />
+                        <p>
+                        <p><strong>Phone:</strong>
+                            <input v-model="checkout.phone" />
+                        </p>
+                        <strong>Address:</strong>
+                        <input v-model="checkout.address" />
+                        </p>
+                        <p>
+                            <strong>City:</strong>
+                            <input v-model="checkout.city" />
+                        </p>
+                        <p>
+                            <strong>State:</strong>
+                            <select v-model="checkout.state">
+                                <option disabled value="">State</option>
+                                <option v-bind:value="states.AL">AL</option>
+                                <option v-bind:value="states.AR">AR</option>
+                                <option v-bind:value="states.CA">CA</option>
+                                <option v-bind:value="states.NV">NV</option>
+                            </select>
+                        </p>
+                        <p>
+                            <strong>Zip/ Postal code:</strong>
+                            <input v-model.number="checkout.zip" />
+                        </p>
+                        <p>
+                            <button class="checkout-button" :disabled="!isFormValid" @click="submitOrder">
+                                Checkout
+                            </button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script type="text/javascript">
+        var webstore = new Vue({
+            el: '#app',
+            data: {
+                lessons: [
+                    // {
+                    //     id: 1,
+                    //     subject: "Cooking",
+                    //     location: "New York",
+                    //     price: 100,
+                    //     spaces: 5,
+                    //     image: "images/cooking.webp"
+                    // },
+                    // {
+                    //     id: 2,
+                    //     subject: "Robotics",
+                    //     location: "California",
+                    //     price: 200,
+                    //     spaces: 7,
+                    //     image: "images/robotics.jpg"
+                    // },
+                    // {
+                    //     id: 3,
+                    //     subject: "Hiking",
+                    //     location: "Austin",
+                    //     price: 100,
+                    //     spaces: 9,
+                    //     image: "images/hiking.jpg"
+                    // },
+                    // {
+                    //     id: 4,
+                    //     subject: "Gardening",
+                    //     location: "Phoenix",
+                    //     price: 90,
+                    //     spaces: 10,
+                    //     image: "images/gardening.jpg"
+                    // },
+                    // {
+                    //     id: 5,
+                    //     subject: "Pottery",
+                    //     location: "Los Angeles",
+                    //     price: 200,
+                    //     spaces: 5,
+                    //     image: "images/pottery.webp"
+                    // },
+                    // {
+                    //     id: 6,
+                    //     subject: "Painting",
+                    //     location: "Chicago",
+                    //     price: 150,
+                    //     spaces: 7,
+                    //     image: "images/painting.jpg"
+                    // },
+                    // {
+                    //     id: 7,
+                    //     subject: "Designer",
+                    //     location: "New York",
+                    //     price: 180,
+                    //     spaces: 8,
+                    //     image: "images/designer.jpg"
+                    // },
+                    // {
+                    //     id: 8,
+                    //     subject: "Material Arts",
+                    //     location: "San Diego",
+                    //     price: 150,
+                    //     spaces: 6,
+                    //     image: "images/arts.webp"
+                    // },
+                    // {
+                    //     id: 9,
+                    //     subject: "Hip-Hop Dance",
+                    //     location: "Austin",
+                    //     price: 130,
+                    //     spaces: 5,
+                    //     image: "images/dance.jpg"
+                    // },
+                    // {
+                    //     id: 10,
+                    //     subject: "Ballet",
+                    //     location: "California",
+                    //     price: 130,
+                    //     spaces: 7,
+                    //     image: "images/ballet.webp"
+                    // },
+                    // {
+                    //     id: 11,
+                    //     subject: "Synthesis Cohorts",
+                    //     location: "Boston",
+                    //     price: 80,
+                    //     spaces: 8,
+                    //     image: "images/synthesis.jpg"
+                    // },
+                    // {
+                    //     id: 12,
+                    //     subject: "Entrepreneurship Clubs",
+                    //     location: "Columbus",
+                    //     price: 170,
+                    //     spaces: 5,
+                    //     image: "images/entre.jpg"
+                    // }
+                ],
+                cart: [],
+                showLesson: true,
+                checkout: {
+                    name: '',
+                    email: '',
+                    phone: '',
+                    address: '',
+                    city: '',
+                    zip: '',
+                    state: '',
+                    method: 'Home',
+                },
+                states: {
+                    AL: 'Alabama',
+                    AR: 'Arizona',
+                    CA: 'California',
+                    NV: 'Nevada'
+                },
+                sortAttribute: "subject",
+                sortOrder: "asc",
+            
+                    searchQuery: "",
+                    lessons: [],
+                   
+                
+            },
+            mounted() {
+                this.fetchProducts();
+            },
+            methods: {
+                addItem(lesson) {
+                    if (lesson.spaces > 0) {
+                        this.cart.push({ ...lesson });
+                        lesson.spaces--;
+                    }
+
+                },
+
+                canAddToCart(lesson) {
+                    return lesson.spaces > 0;
+                },
+                showCheckout: function () {
+                    this.showLesson = !this.showLesson;
+                    console.log("Checkout toggled. showLesson is now:", this.showLesson);
+                },
+                sortLessons() {
+                    this.lessons = [...this.sortedLessons];
+                },
+                removeItem(index) {
+                    const lesson = this.cart[index];
+                    const originalLesson = this.lessons.find(l => l.id === lesson.id);
+                    if (originalLesson) {
+                        originalLesson.spaces++;
+                    }
+                    this.cart.splice(index, 1);
+                },
+                submitOrder() {
+                    if (!this.checkout.name.trim() ||
+                        !this.checkout.phone.trim() ||
+                        !this.checkout.email.trim() ||
+                        !this.checkout.address.trim() ||
+                        !this.checkout.city.trim() ||
+                        !this.checkout.state.trim() ||
+                        !this.checkout.zip.toString().trim()) {
+                        alert("Please fill out all required fields.");
+                        return;
+                    }
+
+                    // Build cart summary with quantity per item
+                    const cartSummary = [];
+                    this.cart.forEach(item => {
+                        const existing = cartSummary.find(item => item.id === item.id);
+                        if (existing) {
+                            existing.quantity += 1;
+                        } else {
+                            cartSummary.push({
+                                id: item.id,
+                                _id: item._id,
+                                subject: item.subject,
+                                price: item.price,
+                                location: item.location,
+                                spaces: item.spaces,
+                                quantity: 1,
+                            });
+                        }
+                    });
+
+                    fetch("https://coursework-backend-1dmj.onrender.com/collection/orders", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            name: this.checkout.name,
+                            phone: this.checkout.phone,
+                            email: this.checkout.email,
+                            address: this.checkout.address,
+                            city: this.checkout.city,
+                            state: this.checkout.state,
+                            zip: this.checkout.zip,
+                            cart: cartSummary
+                        })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            console.log("Order submitted:", data);
+                            alert("Order submitted successfully!");
+                            this.updateSpaces(cartSummary); // ✅ pass correct data
+                            this.cart = [];
+                            this.checkout = {
+                                name: '',
+                                phone: '',
+                                email: '',
+                                address: '',
+                                city: '',
+                                state: '',
+                                zip: ''
+                            };
+                            this.showLesson = true;
+                        })
+                    // .catch(err => {
+                    //     console.error("Checkout error:", err);
+                    //     alert("Something went wrong while submitting your order.");
+                    // });
+                },
+
+                updateSpaces(cartSummary) {
+                    cartSummary.forEach(item => {
+                        const updatedSpaces = item.spaces - item.quantity;
+
+                        fetch(`https://coursework-backend-1dmj.onrender.com/collection/courses/${item._id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ spaces: updatedSpaces })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.msg === 'success') {
+                                    console.log(`Spaces updated for ${item.subject}`);
+                                } else {
+                                    console.error(`Failed to update spaces for ${item.subject}:`, data.error);
+                                }
+                            })
+                            .catch(error => console.error('Error updating spaces:', error));
+                    });
+                },
+
+
+                async fetchProducts() {
+                    try {
+                        const response = await fetch("https://coursework-backend-1dmj.onrender.com/collection/courses");
+
+                        if (!response.ok) {
+                            throw new Error("Failed to fetch products");
+                        }
+
+                        const data = await response.json();
+                        this.lessons = data; // or this.products = data; depending on your app
+                        console.log("Fetched products:", data);
+                    } catch (error) {
+                        console.error("Error fetching products:", error);
+                    }
+                },
+                async searchLessons() {
+                    if (!this.searchQuery.trim()) {
+                        alert("Please enter a search query");
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`https://coursework-backend-1dmj.onrender.com/search?q=${this.searchQuery}`);
+                        if (!response.ok) {
+                            throw new Error("Failed to fetch search results");
+                        }
+                        const data = await response.json();
+                        this.lessons = data;  // Store the search results in lessons
+                    } catch (error) {
+                        console.error("Error fetching lessons:", error);
+                        alert("Error fetching search results");
+                    }
+                }
+
+            },
+            computed: {
+                cartItemCount: function () {
+                    return this.cart.length || "";
+                },
+                cartItems: function () {
+                    return this.cart;
+                },
+                totalPrice: function () {
+                    return this.cartItems.reduce((sum, lesson) => sum + lesson.price, 0);
+                },
+                sortedLessons() {
+                    return [...this.lessons].sort((a, b) => {
+                        let attr = this.sortAttribute;
+                        let order = this.sortOrder === "asc" ? 1 : -1;
+
+                        if (typeof a[attr] === "string") {
+                            return a[attr].localeCompare(b[attr]) * order;
+                        }
+                        return (a[attr] - b[attr]) * order;
+                    });
+                },
+                isFormValid() {
+                    const { name, phone, email, address, city, state, zip } = this.checkout;
+
+                    const nameIsValid = /^[A-Za-z\s]+$/.test(name);
+                    const phoneIsValid = /^[0-9]+$/.test(phone);
+                    const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                    const addressIsValid = address.trim() !== "";
+                    const cityIsValid = city.trim() !== "";
+                    const stateIsValid = state.trim() !== "";
+                    const zipIsValid = zip.toString().trim() !== "";
+
+                    return (
+                        nameIsValid &&
+                        phoneIsValid &&
+                        emailIsValid &&
+                        addressIsValid &&
+                        cityIsValid &&
+                        stateIsValid &&
+                        zipIsValid
+                    );
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>
