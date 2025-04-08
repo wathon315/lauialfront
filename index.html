@@ -351,27 +351,27 @@
                         return (a[attr] - b[attr]) * order;
                     });
                 },
-                // isFormValid() {
-                //     const { name, phone, email, address, city, state, zip } = this.checkout;
+                isFormValid() {
+                    const { name, phone, email, address, city, state, zip } = this.checkout;
 
-                //     const nameIsValid = /^[A-Za-z\s]+$/.test(name);
-                //     const phoneIsValid = /^[0-9]+$/.test(phone);
-                //     const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-                //     const addressIsValid = address.trim() !== "";
-                //     const cityIsValid = city.trim() !== "";
-                //     const stateIsValid = state.trim() !== "";
-                //     const zipIsValid = zip.toString().trim() !== "";
+                    const nameIsValid = /^[A-Za-z\s]+$/.test(name);
+                    const phoneIsValid = /^[0-9]+$/.test(phone);
+                    const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                    const addressIsValid = address.trim() !== "";
+                    const cityIsValid = city.trim() !== "";
+                    const stateIsValid = state.trim() !== "";
+                    const zipIsValid = zip.toString().trim() !== "";
 
-                //     return (
-                //         nameIsValid &&
-                //         phoneIsValid &&
-                //         emailIsValid &&
-                //         addressIsValid &&
-                //         cityIsValid &&
-                //         stateIsValid &&
-                //         zipIsValid
-                //     );
-                // }
+                    return (
+                        nameIsValid &&
+                        phoneIsValid &&
+                        emailIsValid &&
+                        addressIsValid &&
+                        cityIsValid &&
+                        stateIsValid &&
+                        zipIsValid
+                    );
+                }
             }
         })
     </script>
